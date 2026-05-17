@@ -15,6 +15,12 @@ type Contact = {
 
 const STATUS_OPTIONS: ContactStatus[] = ['new', 'contacted', 'discarded'];
 
+const STATUS_STYLES: Record<ContactStatus, string> = {
+  new: 'border-blue-200 bg-blue-50 text-blue-700',
+  contacted: 'border-amber-200 bg-amber-50 text-amber-800',
+  discarded: 'border-gray-200 bg-gray-100 text-gray-600',
+};
+
 function upsertSorted(list: Contact[], next: Contact): Contact[] {
   const without = list.filter((c) => c.id !== next.id);
   return [next, ...without].sort((a, b) =>
@@ -106,53 +112,64 @@ export default function InboxPage() {
 
       <main className="mx-auto max-w-4xl px-4 py-6">
         {updateError && (
-          <p className="mb-4 rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">
+          <p className="mb-4 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
             Failed to update: {updateError}
           </p>
         )}
 
         {loadError ? (
-          <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">
-            {loadError}
-          </p>
+          <div className="rounded-lg border border-red-200 bg-red-50 p-6 text-center">
+            <p className="text-sm font-medium text-red-800">Couldn't load inbox</p>
+            <p className="mt-1 text-sm text-red-700">{loadError}</p>
+          </div>
         ) : contacts === null ? (
-          <p className="text-sm text-gray-500">Loading…</p>
+          <div className="rounded-lg border border-dashed border-gray-300 bg-white p-12 text-center">
+            <p className="text-sm text-gray-500">Loading inbox…</p>
+          </div>
         ) : contacts.length === 0 ? (
-          <p className="text-sm text-gray-500">No contacts yet.</p>
+          <div className="rounded-lg border border-dashed border-gray-300 bg-white p-12 text-center">
+            <p className="text-sm font-medium text-gray-900">No contacts yet</p>
+            <p className="mt-1 text-sm text-gray-500">
+              New submissions from your contact form will appear here.
+            </p>
+          </div>
         ) : (
           <ul className="space-y-3">
             {contacts.map((c) => (
               <li
                 key={c.id}
-                className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm"
+                className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm transition-shadow hover:shadow-md"
               >
                 <div className="flex items-start justify-between gap-4">
                   <div className="min-w-0">
-                    <p className="text-sm font-semibold text-gray-900">{c.name}</p>
-                    <p className="text-xs text-gray-500">{c.email}</p>
+                    <p className="truncate text-sm font-semibold text-gray-900">
+                      {c.name}
+                    </p>
+                    <p className="truncate text-xs text-gray-500">{c.email}</p>
                   </div>
-                  <div className="flex shrink-0 flex-col items-end gap-1">
-                    <select
-                      value={c.status}
-                      onChange={(e) =>
-                        void updateStatus(c.id, e.target.value as ContactStatus)
-                      }
-                      className="rounded-md border border-gray-300 bg-white px-2 py-1 text-xs font-medium text-gray-700 focus:border-gray-900 focus:outline-none focus:ring-1 focus:ring-gray-900"
-                    >
-                      {STATUS_OPTIONS.map((status) => (
-                        <option key={status} value={status}>
-                          {status}
-                        </option>
-                      ))}
-                    </select>
-                    <time className="text-xs text-gray-400">
-                      {new Date(c.created_at).toLocaleString()}
-                    </time>
-                  </div>
+                  <time className="shrink-0 text-xs text-gray-400">
+                    {new Date(c.created_at).toLocaleString()}
+                  </time>
                 </div>
                 <p className="mt-3 whitespace-pre-wrap text-sm text-gray-700">
                   {c.message}
                 </p>
+                <div className="mt-4 flex items-center justify-end">
+                  <select
+                    aria-label="Status"
+                    value={c.status}
+                    onChange={(e) =>
+                      void updateStatus(c.id, e.target.value as ContactStatus)
+                    }
+                    className={`rounded-full border px-3 py-1 text-xs font-medium capitalize focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-1 ${STATUS_STYLES[c.status]}`}
+                  >
+                    {STATUS_OPTIONS.map((status) => (
+                      <option key={status} value={status}>
+                        {status}
+                      </option>
+                    ))}
+                  </select>
+                </div>
               </li>
             ))}
           </ul>

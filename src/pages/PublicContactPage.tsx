@@ -70,8 +70,8 @@ export default function PublicContactPage() {
 
   if (lookup.status === 'loading') {
     return (
-      <div className="flex min-h-screen items-center justify-center text-sm text-gray-500">
-        Loading…
+      <div className="flex min-h-screen items-center justify-center bg-gray-50 p-4">
+        <p className="text-sm text-gray-500">Loading…</p>
       </div>
     );
   }
@@ -92,9 +92,9 @@ export default function PublicContactPage() {
   if (lookup.status === 'error') {
     return (
       <div className="flex min-h-screen items-center justify-center bg-gray-50 p-4">
-        <div className="w-full max-w-sm rounded-lg border border-gray-200 bg-white p-6 text-center shadow-sm">
-          <h1 className="text-lg font-semibold text-gray-900">Something went wrong</h1>
-          <p className="mt-2 text-sm text-gray-500">{lookup.message}</p>
+        <div className="w-full max-w-sm rounded-lg border border-red-200 bg-red-50 p-6 text-center">
+          <h1 className="text-lg font-semibold text-red-800">Something went wrong</h1>
+          <p className="mt-2 text-sm text-red-700">{lookup.message}</p>
         </div>
       </div>
     );
