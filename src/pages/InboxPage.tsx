@@ -15,6 +15,13 @@ type Contact = {
 
 const STATUS_OPTIONS: ContactStatus[] = ['new', 'contacted', 'discarded'];
 
+function upsertSorted(list: Contact[], next: Contact): Contact[] {
+  const without = list.filter((c) => c.id !== next.id);
+  return [next, ...without].sort((a, b) =>
+    b.created_at.localeCompare(a.created_at),
+  );
+}
+
 export default function InboxPage() {
   const { session, signOut } = useAuth();
 
@@ -24,6 +31,7 @@ export default function InboxPage() {
 
   useEffect(() => {
     let cancelled = false;
+
     supabase
       .from('contacts')
       .select('id, name, email, message, status, created_at')
@@ -37,8 +45,24 @@ export default function InboxPage() {
         setContacts((data ?? []) as Contact[]);
       });
 
+    const channel = supabase
+      .channel('inbox-contacts')
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'contacts' },
+        (payload) => {
+          if (cancelled) return;
+          const row = payload.new as Contact;
+          setContacts((current) =>
+            current ? upsertSorted(current, row) : [row],
+          );
+        },
+      )
+      .subscribe();
+
     return () => {
       cancelled = true;
+      void supabase.removeChannel(channel);
     };
   }, []);
 
